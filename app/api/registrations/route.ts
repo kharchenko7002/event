@@ -54,3 +54,24 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function DELETE(req: Request) {
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ error: "Mangler id" }, { status: 400 });
+  }
+
+  const deleted = (await sql`
+    DELETE FROM registrations
+    WHERE id = ${id}
+    RETURNING id
+  `) as { id: string }[];
+
+  if (deleted.length === 0) {
+    return NextResponse.json({ error: "Fant ikke registrering" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
