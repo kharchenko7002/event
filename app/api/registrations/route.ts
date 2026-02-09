@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { sql } from "@/lib/db";
+import { isAdmin } from "@/lib/auth";
+import { auditLog } from "@/lib/audit";
+import { maskEmail } from "@/lib/mask";
 
 export const runtime = "nodejs";
 
@@ -19,6 +22,10 @@ function validate(name: string, email: string): string | null {
 }
 
 export async function GET() {
+  if (!isAdmin()) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const rows = (await sql`
     SELECT id, name, email, created_at
     FROM registrations
@@ -46,6 +53,11 @@ export async function POST(req: Request) {
       RETURNING id, name, email, created_at
     `) as RegistrationRow[];
 
+    await auditLog("CREATE_REGISTRATION", "public", {
+      id,
+      email_masked: maskEmail(email.trim()),
+    });
+
     return NextResponse.json({ item: inserted[0] }, { status: 201 });
   } catch {
     return NextResponse.json(
@@ -56,6 +68,10 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  if (!isAdmin()) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
 
@@ -73,10 +89,16 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Fant ikke registrering" }, { status: 404 });
   }
 
+  await auditLog("DELETE_REGISTRATION", "admin", { id });
+
   return NextResponse.json({ ok: true });
 }
 
 export async function PUT(req: Request) {
+  if (!isAdmin()) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json().catch(() => ({}));
 
   const id = String((body as any)?.id ?? "");
@@ -99,6 +121,11 @@ export async function PUT(req: Request) {
     if (updated.length === 0) {
       return NextResponse.json({ error: "Fant ikke registrering" }, { status: 404 });
     }
+
+    await auditLog("UPDATE_REGISTRATION", "admin", {
+      id,
+      email_masked: maskEmail(email.trim()),
+    });
 
     return NextResponse.json({ item: updated[0] });
   } catch {

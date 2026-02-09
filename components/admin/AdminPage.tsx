@@ -27,7 +27,7 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError("Kunne ikke laste data.");
+        setError(typeof data?.error === "string" ? data.error : "Kunne ikke laste data.");
         setItems([]);
         return;
       }
@@ -44,6 +44,11 @@ export default function AdminPage() {
   useEffect(() => {
     load();
   }, []);
+
+  async function handleLogout() {
+    await fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
+    window.location.href = "/";
+  }
 
   async function handleDelete(id: string, name: string) {
     const ok = window.confirm(`Slette registrering for "${name}"?`);
@@ -63,9 +68,7 @@ export default function AdminPage() {
         return;
       }
 
-      // если удалили ту же запись, которую редактируем
       if (editing?.id === id) setEditing(null);
-
       await load();
     } catch {
       setError("Kunne ikke slette (nettverk/server).");
@@ -111,10 +114,10 @@ export default function AdminPage() {
     <div style={styles.card}>
       <h1 style={styles.title}>Admin – Registreringer</h1>
       <p style={styles.subtitle}>
-        Viser registreringer med <b>maskert e-post</b> (personvern).
+        Tilgangskontroll + logging er aktiv. E-post vises maskert i tabellen.
       </p>
 
-      <div style={{ marginTop: 12, marginBottom: 4 }}>
+      <div style={{ marginTop: 12, marginBottom: 4, display: "flex", gap: 10 }}>
         <Link
           href="/"
           style={{
@@ -131,6 +134,22 @@ export default function AdminPage() {
         >
           ← Tilbake
         </Link>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "8px 12px",
+            borderRadius: 10,
+            border: "1px solid rgba(0,0,0,0.12)",
+            background: "#111",
+            color: "white",
+            fontWeight: 800,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
+        >
+          Logg ut
+        </button>
       </div>
 
       <SearchBar value={query} onChange={setQuery} />
