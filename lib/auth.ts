@@ -1,8 +1,11 @@
 import { cookies } from "next/headers";
 
-export function isAdmin(): boolean {
-  const token = cookies().get("admin_token")?.value;
+export async function isAdmin(): Promise<boolean> {
   const adminToken = process.env.ADMIN_TOKEN;
   if (!adminToken) return false;
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+
   return token === adminToken;
 }

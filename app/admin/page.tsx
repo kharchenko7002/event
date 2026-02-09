@@ -2,8 +2,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminPage } from "@/components/admin";
 
-export default function Page() {
-  const token = cookies().get("admin_token")?.value;
+export default async function Page() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
   const adminToken = process.env.ADMIN_TOKEN;
 
   if (!adminToken || token !== adminToken) {
