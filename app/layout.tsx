@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import React from "react";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Event påmelding",
@@ -12,9 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const styles: Record<string, React.CSSProperties> = {
-    html: {
-      height: "100%",
-    },
+    html: { height: "100%" },
     body: {
       minHeight: "100%",
       margin: 0,
@@ -43,24 +42,20 @@ export default function RootLayout({
       fontWeight: 800,
       letterSpacing: 0.2,
     },
-    badge: {
-      fontSize: 12,
-      padding: "4px 8px",
+    adminBtn: {
+      fontSize: 13,
+      padding: "8px 12px",
       borderRadius: 999,
       border: "1px solid rgba(0,0,0,0.12)",
       background: "white",
+      textDecoration: "none",
+      color: "#111",
+      fontWeight: 700,
     },
     main: {
       maxWidth: 980,
       margin: "0 auto",
       padding: "24px",
-    },
-    footer: {
-      maxWidth: 980,
-      margin: "0 auto",
-      padding: "24px",
-      color: "#666",
-      fontSize: 13,
     },
   };
 
@@ -70,15 +65,13 @@ export default function RootLayout({
         <header style={styles.header}>
           <div style={styles.headerInner}>
             <div style={styles.brand}>Event påmelding</div>
-            <div style={styles.badge}>Dataminimering: navn + e-post</div>
+            <Link href="/admin" style={styles.adminBtn}>
+              Admin
+            </Link>
           </div>
         </header>
 
         <main style={styles.main}>{children}</main>
-
-        <footer style={styles.footer}>
-          Demo-løsning for innlevering: personvern og sikkerhet bygges inn trinnvis.
-        </footer>
       </body>
     </html>
   );

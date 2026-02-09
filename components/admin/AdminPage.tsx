@@ -5,6 +5,7 @@ import type { Registration } from "./types";
 import { styles } from "./styles";
 import AdminTable from "./AdminTable";
 import SearchBar from "./SearchBar";
+import Link from "next/link";
 
 export default function AdminPage() {
   const [items, setItems] = useState<Registration[]>([]);
@@ -58,7 +59,7 @@ export default function AdminPage() {
         return;
       }
 
-      await load(); // перезагрузить список после удаления
+      await load();
     } catch {
       setError("Kunne ikke slette (nettverk/server).");
     } finally {
@@ -78,6 +79,25 @@ export default function AdminPage() {
       <p style={styles.subtitle}>
         Viser registreringer med <b>maskert e-post</b> (personvern).
       </p>
+
+      <div style={{ marginTop: 12, marginBottom: 4 }}>
+        <Link
+          href="/"
+          style={{
+            display: "inline-block",
+            padding: "8px 12px",
+            borderRadius: 10,
+            border: "1px solid rgba(0,0,0,0.12)",
+            background: "white",
+            textDecoration: "none",
+            color: "#111",
+            fontWeight: 700,
+            fontSize: 13,
+          }}
+        >
+          ← Tilbake
+        </Link>
+      </div>
 
       <SearchBar value={query} onChange={setQuery} />
 
