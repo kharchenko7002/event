@@ -6,6 +6,7 @@ import { styles } from "./styles";
 import AdminTable from "./AdminTable";
 import SearchBar from "./SearchBar";
 import Link from "next/link";
+import EditForm from "./EditForm";
 
 export default function AdminPage() {
   const [items, setItems] = useState<Registration[]>([]);
@@ -13,6 +14,9 @@ export default function AdminPage() {
   const [error, setError] = useState<string>("");
   const [query, setQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [editing, setEditing] = useState<Registration | null>(null);
+  const [saving, setSaving] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -59,11 +63,41 @@ export default function AdminPage() {
         return;
       }
 
+      // если удалили ту же запись, которую редактируем
+      if (editing?.id === id) setEditing(null);
+
       await load();
     } catch {
       setError("Kunne ikke slette (nettverk/server).");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleSave(payload: { id: string; name: string; email: string }) {
+    setSaving(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/registrations", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(typeof data?.error === "string" ? data.error : "Kunne ikke lagre.");
+        return;
+      }
+
+      setEditing(null);
+      await load();
+    } catch {
+      setError("Kunne ikke lagre (nettverk/server).");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -101,6 +135,15 @@ export default function AdminPage() {
 
       <SearchBar value={query} onChange={setQuery} />
 
+      {editing && (
+        <EditForm
+          item={editing}
+          saving={saving}
+          onCancel={() => setEditing(null)}
+          onSave={handleSave}
+        />
+      )}
+
       {loading && <p style={styles.small}>Laster...</p>}
       {error && <div style={styles.err}>{error}</div>}
 
@@ -109,6 +152,7 @@ export default function AdminPage() {
           items={filteredItems}
           onDelete={handleDelete}
           deletingId={deletingId}
+          onEdit={(item) => setEditing(item)}
         />
       )}
     </div>

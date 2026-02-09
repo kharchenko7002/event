@@ -7,10 +7,12 @@ export default function AdminTable({
   items,
   onDelete,
   deletingId,
+  onEdit,
 }: {
   items: Registration[];
   onDelete: (id: string, name: string) => void;
   deletingId: string | null;
+  onEdit: (item: Registration) => void;
 }) {
   return (
     <table style={styles.table}>
@@ -33,23 +35,41 @@ export default function AdminTable({
               <td style={styles.td}>{maskEmail(x.email)}</td>
               <td style={styles.td}>{new Date(x.created_at).toLocaleString()}</td>
               <td style={styles.td}>
-                <button
-                  onClick={() => onDelete(x.id, x.name)}
-                  disabled={isDeleting}
-                  style={{
-                    padding: "6px 10px",
-                    borderRadius: 10,
-                    border: "1px solid rgba(0,0,0,0.12)",
-                    background: "#ffecec",
-                    color: "#8a1f1f",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: isDeleting ? "not-allowed" : "pointer",
-                    opacity: isDeleting ? 0.7 : 1,
-                  }}
-                >
-                  {isDeleting ? "Sletter..." : "Slett"}
-                </button>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => onEdit(x)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 10,
+                      border: "1px solid rgba(0,0,0,0.12)",
+                      background: "white",
+                      color: "#111",
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Rediger
+                  </button>
+
+                  <button
+                    onClick={() => onDelete(x.id, x.name)}
+                    disabled={isDeleting}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 10,
+                      border: "1px solid rgba(0,0,0,0.12)",
+                      background: "#ffecec",
+                      color: "#8a1f1f",
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: isDeleting ? "not-allowed" : "pointer",
+                      opacity: isDeleting ? 0.7 : 1,
+                    }}
+                  >
+                    {isDeleting ? "Sletter..." : "Slett"}
+                  </button>
+                </div>
               </td>
             </tr>
           );

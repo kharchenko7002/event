@@ -75,3 +75,36 @@ export async function DELETE(req: Request) {
 
   return NextResponse.json({ ok: true });
 }
+
+export async function PUT(req: Request) {
+  const body = await req.json().catch(() => ({}));
+
+  const id = String((body as any)?.id ?? "");
+  const name = String((body as any)?.name ?? "");
+  const email = String((body as any)?.email ?? "").toLowerCase();
+
+  if (!id) return NextResponse.json({ error: "Mangler id" }, { status: 400 });
+
+  const err = validate(name, email);
+  if (err) return NextResponse.json({ error: err }, { status: 400 });
+
+  try {
+    const updated = (await sql`
+      UPDATE registrations
+      SET name = ${name.trim()}, email = ${email.trim()}
+      WHERE id = ${id}
+      RETURNING id, name, email, created_at
+    `) as RegistrationRow[];
+
+    if (updated.length === 0) {
+      return NextResponse.json({ error: "Fant ikke registrering" }, { status: 404 });
+    }
+
+    return NextResponse.json({ item: updated[0] });
+  } catch {
+    return NextResponse.json(
+      { error: "E-post er allerede i bruk av en annen registrering." },
+      { status: 409 }
+    );
+  }
+}
